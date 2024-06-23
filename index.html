@@ -11,11 +11,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
             flex-direction: column;    
             overflow-y: scroll;
-
         }
         .container {
             background-color: #fff;
@@ -125,7 +123,7 @@
         <div id="message"></div>
     </div>
     <div class="container">
-        <p>ESTOQUE</p>
+        <p>ESTOQUE GGs</p>
         <div id="stock"></div>
         <div class="pagination" id="pagination"></div>
     </div>
@@ -133,6 +131,7 @@
     <!-- Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
 
      <!-- Seu script personalizado -->
      <script>
@@ -144,9 +143,8 @@
   storageBucket: "theostore7db.appspot.com",
   messagingSenderId: "796060734091",
   appId: "1:796060734091:web:9e92233bb0f116e3343a8e"
-};
-// // Inicializa o Firebase
-firebase.initializeApp(firebaseConfig);
+};// // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
         var database = firebase.database();
 
         var cardsPerPage = 10;
