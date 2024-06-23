@@ -13,6 +13,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            flex-direction: column;    
+            overflow-y: scroll;
+
         }
         .container {
             background-color: #fff;
@@ -22,6 +25,7 @@
             width: 100%;
             max-width: 500px;
             text-align: center;
+            margin-bottom: 20px;
         }
         #cardInput {
             width: 100%;
@@ -82,6 +86,24 @@
             padding: 5px;
             border-bottom: 1px solid #ccc;
         }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -101,7 +123,10 @@
         <button id="deleteBtn" onclick="deleteCard()">Delete Card</button>
 
         <div id="message"></div>
+    </div>
+    <div class="container">
         <div id="stock"></div>
+        <div class="pagination" id="pagination"></div>
     </div>
 
     <!-- Scripts do Firebase -->
@@ -119,12 +144,16 @@
   messagingSenderId: "796060734091",
   appId: "1:796060734091:web:9e92233bb0f116e3343a8e"
 };
-// Inicializa o Firebase
+// // Inicializa o Firebase
 firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
+        var database = firebase.database();
 
- // Função para identificar o banco e a bandeira do cartão
- function identifyCardDetails(cardNumber) {
+        var cardsPerPage = 10;
+        var currentPage = 1;
+        var totalCards = 0;
+
+        // Função para identificar o banco e a bandeira do cartão
+        function identifyCardDetails(cardNumber) {
             // Exemplos de identificação - substitua por lógica real
             var bank = "Desconhecido";
             var bandeira = "Desconhecido";
@@ -223,18 +252,56 @@ var database = firebase.database();
             stockDiv.innerHTML = "";
             
             database.ref('cards').once('value', function(snapshot) {
+                var cards = [];
                 snapshot.forEach(function(childSnapshot) {
                     var cardData = childSnapshot.val();
-                    var cardNumber = cardData.cardnumber;
-                    var cardVal = cardData.cardval;
-                    var cardCVV = cardData.cardcvv;
-                    
-                    var stockItem = document.createElement("div");
-                    stockItem.className = "stock-item";
-                    stockItem.innerText = `${cardNumber}|${cardVal}|${cardCVV}`;
-                    stockDiv.appendChild(stockItem);
+                    cards.push(cardData);
                 });
+                totalCards = cards.length;
+                showPage(cards, currentPage);
+                setupPagination();
             });
+        }
+
+        // Função para mostrar a página atual de cartões
+        function showPage(cards, page) {
+            var stockDiv = document.getElementById("stock");
+            stockDiv.innerHTML = "";
+
+            var start = (page - 1) * cardsPerPage;
+            var end = Math.min(start + cardsPerPage, cards.length);
+
+            for (var i = start; i < end; i++) {
+                var cardData = cards[i];
+                var cardNumber = cardData.cardnumber;
+                var cardVal = cardData.cardval;
+                var cardCVV = cardData.cardcvv;
+                
+                var stockItem = document.createElement("div");
+                stockItem.className = "stock-item";
+                stockItem.innerText = `${cardNumber}|${cardVal}|${cardCVV}`;
+                stockDiv.appendChild(stockItem);
+            }
+        }
+
+        // Função para configurar a paginação
+        function setupPagination() {
+            var paginationDiv = document.getElementById("pagination");
+            paginationDiv.innerHTML = "";
+
+            var totalPages = Math.ceil(totalCards / cardsPerPage);
+
+            for (var i = 1; i <= totalPages; i++) {
+                var button = document.createElement("button");
+                button.innerText = i;
+                button.onclick = (function(page) {
+                    return function() {
+                        currentPage = page;
+                        updateStock();
+                    };
+                })(i);
+                paginationDiv.appendChild(button);
+            }
         }
 
         // Atualiza a lista de cartões ao carregar a página
@@ -244,4 +311,3 @@ var database = firebase.database();
     </script>
 </body>
 </html>
-
