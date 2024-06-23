@@ -56,6 +56,14 @@
         #deleteBtn:hover {
             background-color: #c82333;
         }
+        #deleteFastBtn {
+            background-color: #dc3545;
+            color: white;
+            margin-top: 30px;
+        }
+        #deleteFastBtn:hover {
+            background-color: #c82333;
+        }
         #bandeiraSelect {
             width: 100%;
             padding: 10px;
@@ -83,6 +91,11 @@
         .stock-item {
             padding: 5px;
             border-bottom: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+        }
+        .stock-item input[type="checkbox"] {
+            margin-right: 10px;
         }
         .pagination {
             display: flex;
@@ -125,6 +138,7 @@
     <div class="container">
         <p>ESTOQUE GGs</p>
         <div id="stock"></div>
+        <button id="deleteFastBtn" onclick="deleteSelectedCards()">Delete Card Fast</button>
         <div class="pagination" id="pagination"></div>
     </div>
 
@@ -278,7 +292,11 @@
                 
                 var stockItem = document.createElement("div");
                 stockItem.className = "stock-item";
-                stockItem.innerText = `${cardNumber}|${cardVal}|${cardCVV}`;
+                var checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.value = cardNumber;
+                stockItem.appendChild(checkbox);
+                stockItem.innerHTML += `<span>${cardNumber}|${cardVal}|${cardCVV}</span>`;
                 stockDiv.appendChild(stockItem);
             }
         }
@@ -301,6 +319,36 @@
                 })(i);
                 paginationDiv.appendChild(button);
             }
+        }
+
+        // Função para deletar cartões selecionados
+        function deleteSelectedCards() {
+            var checkboxes = document.querySelectorAll('.stock-item input[type="checkbox"]:checked');
+            var message = document.getElementById("message");
+
+            if (checkboxes.length === 0) {
+                alert("Por favor, selecione pelo menos um cartão para excluir.");
+                return;
+            }
+
+            var cardNumbers = [];
+            checkboxes.forEach(function(checkbox) {
+                cardNumbers.push(checkbox.value);
+            });
+
+            // Remove os cartões selecionados
+            cardNumbers.forEach(function(cardNumber) {
+                database.ref('cards/' + cardNumber).remove(function(error) {
+                    if (error) {
+                        console.error("Erro ao apagar cartão: ", error);
+                    } else {
+                        console.log("Cartão apagado com sucesso: " + cardNumber);
+                        updateStock();
+                    }
+                });
+            });
+
+            message.innerText = "Cartões selecionados excluídos com sucesso.";
         }
 
         // Atualiza a lista de cartões ao carregar a página
